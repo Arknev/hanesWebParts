@@ -27,7 +27,9 @@
       "dom",
       "es2015.collection"
     ],
-    "esModuleInterop": true
+    "allowSyntheticDefaultImports": true, // DEV: option added 27OCT2020
+    "esModuleInterop": true,
+    "resolveJsonModule": true // DEV: option added 27JUN2020
   },
   "include": [
     "src/**/*.ts",

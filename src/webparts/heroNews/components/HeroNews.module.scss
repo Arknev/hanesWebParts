@@ -1,12 +1,131 @@
 @import '~office-ui-fabric-react/dist/sass/References.scss';
-
-.heroNews {
+.hhHeroNews {
+  &:hover{
+    i[class*="slick-next"],
+    i[class*="slick-prev"]{
+      visibility: visible;
+    }
+  }
+  button[class*="slick-next"]{
+    z-index: 999;
+    top: 50%;
+    right: 10px;
+  }
+  button[class*="slick-prev"]{
+    z-index: 999;
+    top: 50%;
+    left: 10px;
+  }
+  i[class*="slick-next"]{
+    z-index: 999;
+    top: 50%;
+    right: 0;
+    background: #272727;
+    opacity: 0.60;
+    color: white;
+    font-size: 25px;
+    height: 35px;
+    padding: 5px;
+    line-height: 35px;
+    text-align: center;
+    width: 26px;
+    visibility: hidden;
+    &:hover{
+      visibility: visible;
+    }
+  }
+  i[class*="slick-prev"]{
+    z-index: 999;
+    top: 50%;
+    left: 0;
+    opacity: 0.60;
+    background: #272727;
+    color: white;
+    font-size: 25px;
+    height: 35px;
+    padding: 5px;
+    line-height: 35px;
+    text-align: center;
+    width: 26px;
+    visibility: hidden;
+    &:hover{
+      visibility: visible;
+    }
+  }
+  *[class*="slick-prev"]:before,
+  *[class*="slick-next"]:before{
+    content: none !important;
+  }
+  .heroNewsContainer{
+    width: 100%;
+  }
+  .heroNewsImageContainer{
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transition: all .5s;
+  }
+  .heroNewsGradBackground{
+    display: none;
+    content: "";
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: block;
+    background-color: rgba(0, 0, 0, 1.0);
+    background: linear-gradient(0deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.45) 25%, rgba(255,255,255,0) 50%);;
+  }
+  .heroNewsTextContainer{
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: auto;
+    color: white;
+  }
+  .heroNewsItemContainer {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid transparent;
+    cursor: pointer;
+    &:hover{
+      .heroNewsImageContainer{
+        transform: scale(1.05);
+      }
+    }
+    &:focus{
+      .heroNewsImageContainer{
+        transform: scale(1.05);
+      }
+    }
+  }
+  .heroNewsCarouselItemContainer {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    border: 0;
+    cursor: pointer;
+    &:hover{
+      .heroNewsImageContainer{
+        transform: scale(1.05);
+      }
+    }
+    &:focus{
+      .heroNewsImageContainer{
+        transform: scale(1.05);
+      }
+    }
+  }
   .container {
     max-width: 700px;
     margin: 0px auto;
-    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2), 0 25px 50px 0 rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px 0 rgba(64,64,64, 0.2), 0 25px 50px 0 rgba(0, 0, 0, 0.1);
   }
-
   .row {
     @include ms-Grid-row;
     @include ms-fontColor-white;
