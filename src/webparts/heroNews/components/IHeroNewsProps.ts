@@ -11,7 +11,11 @@ export interface IHeroNewsProps {
   displayMode: DisplayMode;
   themeVariant: IReadonlyTheme | undefined;
   updateWpTitleProperty: (value: string) => void;
-  maxItemsToShow: number;
+  maxItemsInTileView: number;
+  maxItemsInCarousel: number;
+  slidesToShow: number;
+  slidesToScroll: number;
+  useCenterMode: boolean;
   contentTypeNameValue: string;
 }
 export interface INewsPostItem{

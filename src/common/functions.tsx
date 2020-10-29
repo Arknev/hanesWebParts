@@ -197,23 +197,41 @@ export function GetContainerWidthBasedValue(ValueToGet: number, ContainerWidth: 
       }
       break;
     /** Hero news, adjust row height based on container width. Values mirror OOB WP hero layout. */
-    case 1:
-      if (ContainerWidth > 1600) {
-        ValueToReturn = 600;
-      }
-      else if (ContainerWidth > 1367) {
-        ValueToReturn = 490;
-      }
-      else if (ContainerWidth > 1025) {
-        ValueToReturn = 450;
-      }
-      else if (ContainerWidth > 641) {
-        ValueToReturn = 400;
-      }
-      else {
-        ValueToReturn = 400;
-      }
-      break;
+    // case 1:
+    //   if (ContainerWidth > 1600) {
+    //     ValueToReturn = 600;
+    //   }
+    //   else if (ContainerWidth > 1367) {
+    //     ValueToReturn = 490;
+    //   }
+    //   else if (ContainerWidth > 1025) {
+    //     ValueToReturn = 450;
+    //   }
+    //   else if (ContainerWidth > 641) {
+    //     ValueToReturn = 400;
+    //   }
+    //   else {
+    //     ValueToReturn = 400;
+    //   }
+    //   break;
+      case 1:
+        if (ContainerWidth > 1921) { // larger than 1920
+          ValueToReturn = 646;
+        }
+        else if (ContainerWidth > 1367) { //larger than 1366
+          ValueToReturn = 538;
+        }
+        else if (ContainerWidth > 1025) { //larger than 1024
+          ValueToReturn = 460;
+        }
+        else if (ContainerWidth > 641) { //larger than 640
+          ValueToReturn = 345;
+        }
+        else {
+          ValueToReturn = 215;
+        }
+        break;
+
     /** Hero news, set image rendition */
     case 2:
       if (ContainerWidth > 1600) {

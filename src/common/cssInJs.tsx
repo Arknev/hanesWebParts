@@ -127,8 +127,8 @@ export function CustomCss(themeVariant: IReadonlyTheme) {
       left: 0,
     },
     heroNewsHeaderTextLarge: {
-      fontSize: '32px',
-      fontWeight: '100'
+      fontSize: '28px',
+      fontWeight: '700'
     },
     heroNewsHeaderTextMedium: {
       fontSize: '21px',

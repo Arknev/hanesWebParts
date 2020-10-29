@@ -73,9 +73,10 @@ export default class HeroNews extends React.Component<IHeroNewsProps, {
    */
   private async GetAllNewsItems() {
     const CurrSiteWeb = Web(this.props.WebPartContext.pageContext.site.absoluteUrl);
+    console.log(CurrSiteWeb);
     let AllNewsItemsArray: INewsPostItem[] = [];
     let CurrGetAllNewsItemsResponse: any[] = [];
-    let QueryFilterString: string = `ContentType eq \'${this.props.contentTypeNameValue}\' and FirstPublishedDate gt \'${moment().subtract(1, 'year').format('YYYY-MM-DD')}T00:00:00Z\'`;
+    let QueryFilterString: string = `ContentType eq \'${this.props.contentTypeNameValue}\' and Article_x0020_Publish_x0020_Date le \'${moment().format('YYYY-MM-DD')}T23:59:59Z\' and Created gt \'${moment().subtract(1, 'year').format('YYYY-MM-DD')}T00:00:00Z\'`; //FirstPublishedDate
     let QuerySelectColumnsString = ''.concat(
       'Title,',
       'Id,',
@@ -91,10 +92,11 @@ export default class HeroNews extends React.Component<IHeroNewsProps, {
       .select(QuerySelectColumnsString)
       .expand('ContentType')
       .filter(QueryFilterString)
-      .top(5)
-      .orderBy('FirstPublishedDate', false)
+      .top(50)
+      .orderBy('Created', false) //FirstPublishedDate
       .get()
       ;
+    console.log(CurrGetAllNewsItemsResponse);
     CurrGetAllNewsItemsResponse.map(NewsPostItem => {
       let BannerImageUrlVal = '';
       let BannerImageHasURL = commonFunctions.funcCheckObjForProp(NewsPostItem.BannerImageUrl, 'Url');
@@ -115,6 +117,7 @@ export default class HeroNews extends React.Component<IHeroNewsProps, {
         FirstPublishedDate: NewsPostItem.FirstPublishedDate
       });
     });
+    console.log(AllNewsItemsArray);
     return AllNewsItemsArray;
   }
   /**
@@ -191,17 +194,20 @@ export default class HeroNews extends React.Component<IHeroNewsProps, {
         }
         else {
           /** Items found */
-          if (this.state.NewsContainerWidth < 640) {
+          if (this.state.NewsContainerWidth < 640 || this.props.useCarouselOnly) {
             /** Carousel View */
             ViewContentJSX =
               <NewsPostItemsDisplay
-                NewsItemsCount={this.props.maxItemsToShow > this.state.NewsItemsArray.length ? this.state.NewsItemsArray.length : this.props.maxItemsToShow}
+                NewsItemsCount={this.props.maxItemsInCarousel > this.state.NewsItemsArray.length ? this.state.NewsItemsArray.length : this.props.maxItemsInCarousel}
                 NewsRowHeight={this.state.NewsRowHeight}
                 NewsItemsArray={this.state.NewsItemsArray}
                 customAppCss={this.props.customAppCss}
                 BannerImageResolution={this.state.NewsBannerImageResolution}
                 NewsViewMode={1}
                 displayMode={this.props.displayMode}
+                slidesToScroll={this.props.slidesToScroll}
+                slidesToShow={this.props.slidesToShow}
+                useCenterMode={this.props.useCenterMode}
               />
               ;
           }
@@ -209,13 +215,16 @@ export default class HeroNews extends React.Component<IHeroNewsProps, {
             /** Tile View */
             ViewContentJSX =
               <NewsPostItemsDisplay
-                NewsItemsCount={this.props.maxItemsToShow > this.state.NewsItemsArray.length ? this.state.NewsItemsArray.length : this.props.maxItemsToShow}
+                NewsItemsCount={this.props.maxItemsInTileView > this.state.NewsItemsArray.length ? this.state.NewsItemsArray.length : this.props.maxItemsInTileView}
                 NewsRowHeight={this.state.NewsRowHeight}
                 NewsItemsArray={this.state.NewsItemsArray}
                 customAppCss={this.props.customAppCss}
                 BannerImageResolution={this.state.NewsBannerImageResolution}
                 NewsViewMode={0}
                 displayMode={this.props.displayMode}
+                slidesToScroll={this.props.slidesToScroll}
+                slidesToShow={this.props.slidesToShow}
+                useCenterMode={this.props.useCenterMode}
               />
               ;
           }

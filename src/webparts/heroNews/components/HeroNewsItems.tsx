@@ -23,6 +23,7 @@ export const NewsPostItemBlock: React.FunctionComponent<IHeroNewsItemBlockProps>
   let NewsItemBlockJSX = null;
   let NewsItemFontSize: string = props.customAppCss.heroNewsHeaderTextLarge;
   let AdjustBannerImageResolution: number = props.BannerImageResolution;
+  let NewsItemPadding: string = '0 28px 28px 28px';
   if (props.BlockType === 1) {
     NewsItemFontSize = props.customAppCss.heroNewsHeaderTextLarge;
     AdjustBannerImageResolution = props.BannerImageResolution;
@@ -36,8 +37,9 @@ export const NewsPostItemBlock: React.FunctionComponent<IHeroNewsItemBlockProps>
     AdjustBannerImageResolution = props.BannerImageResolution <= 2 ? props.BannerImageResolution : props.BannerImageResolution - 2;
   }
   else if (props.BlockType === 4) {
-    NewsItemFontSize = props.customAppCss.heroNewsHeaderTextMedium;
-    AdjustBannerImageResolution = props.BannerImageResolution <= 1 ? props.BannerImageResolution : props.BannerImageResolution - 1;
+    NewsItemFontSize = props.customAppCss.heroNewsHeaderTextLarge; // DEV: changed for styling for original to align with provided sample
+    AdjustBannerImageResolution = props.BannerImageResolution <= 1 ? props.BannerImageResolution : props.BannerImageResolution - 1; //DEV: add adjustment to account for "onlyUseCarousel"
+    NewsItemPadding = '0 28px 45px 85px';
   }
   NewsItemBlockJSX =
     <Stack
@@ -56,7 +58,7 @@ export const NewsPostItemBlock: React.FunctionComponent<IHeroNewsItemBlockProps>
       </div>
       <span className={appCssClass.heroNewsGradBackground}></span>
       <div className={`${appCssClass.heroNewsTextContainer}`}>
-        <div style={{ padding: '0 28px 28px 28px' }}>
+        <div style={{ padding: `${NewsItemPadding}` }}>
           <ClampLines
             text={props.NewsItemProps.Title}
             id={`clampLinesId-${props.NewsItemProps.Id}`}
@@ -90,8 +92,8 @@ export const NewsPostItemsDisplay: React.FunctionComponent<IHeroNewsItemsProps> 
         </Stack>
       </div>
       ;
-    for (let newsItemsArrIndes = 0; newsItemsArrIndes < props.NewsItemsCount; newsItemsArrIndes++) {
-      const currNewsItem = props.NewsItemsArray[newsItemsArrIndes];
+    for (let newsItemsArrIndex = 0; newsItemsArrIndex < props.NewsItemsCount; newsItemsArrIndex++) {
+      const currNewsItem = props.NewsItemsArray[newsItemsArrIndex];
       CurrNewsItemJSX =
         <div>
           <div style={{ height: `${props.NewsRowHeight}px` }}>
@@ -120,11 +122,13 @@ export const NewsPostItemsDisplay: React.FunctionComponent<IHeroNewsItemsProps> 
           dots={true}
           infinite={true}
           speed={500}
-          slidesToShow={1}
-          slidesToScroll={1}
+          slidesToShow={props.slidesToShow}
+          slidesToScroll={props.slidesToScroll}
           autoplay={false}
           adaptiveHeight={true}
+          centerMode={props.useCenterMode}
           arrows={true}
+          centerPadding="60px"
           prevArrow={<Icon iconName={'ChevronLeft'} />}
           nextArrow={<Icon iconName={'ChevronRight'} />}
         >

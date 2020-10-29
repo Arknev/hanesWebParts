@@ -18,7 +18,11 @@ export interface IHeroNewsWebPartProps {
   webPartTitle: string;
   showWebPartTitle: boolean;
   useCarouselOnly: boolean;
-  maxItemsToShow: number;
+  maxItemsInTileView: number;
+  maxItemsInCarousel: number;
+  slidesToShow: number;
+  slidesToScroll: number;
+  useCenterMode: boolean;
   contentTypeNameValue: string;
 }
 export default class HeroNewsWebPart extends BaseClientSideWebPart <IHeroNewsWebPartProps> {
@@ -51,7 +55,11 @@ export default class HeroNewsWebPart extends BaseClientSideWebPart <IHeroNewsWeb
         displayMode: this.displayMode,
         themeVariant: this._themeVariant,
         updateWpTitleProperty: (value: string) => { this.properties.webPartTitle = value; },
-        maxItemsToShow: this.properties.maxItemsToShow,
+        maxItemsInTileView: this.properties.maxItemsInTileView,
+        maxItemsInCarousel: this.properties.maxItemsInCarousel,
+        slidesToShow: this.properties.slidesToShow,
+        slidesToScroll: this.properties.slidesToScroll,
+        useCenterMode: this.properties.useCenterMode,
         contentTypeNameValue: this.properties.contentTypeNameValue
       }
     );
@@ -83,11 +91,35 @@ export default class HeroNewsWebPart extends BaseClientSideWebPart <IHeroNewsWeb
                   text: 'Always Use Carousel',
                   checked: this.properties.useCarouselOnly
                 }),
-                PropertyPaneSlider('maxItemsToShow',{
-                  label: 'Max Items to Show',
+                PropertyPaneCheckbox('useCenterMode', {
+                  text: 'Use Center Mode',
+                  checked: this.properties.useCenterMode,
+                  disabled: this.properties.useCarouselOnly == true ? false : true
+                }),
+                PropertyPaneSlider('maxItemsInTileView',{
+                  label: 'Max Items in Tile View',
                   min: 1,
                   max: 5,
-                  value: this.properties.maxItemsToShow
+                  value: this.properties.maxItemsInTileView,
+                  disabled: this.properties.useCarouselOnly == true ? true : false
+                }),
+                PropertyPaneSlider('maxItemsInCarousel',{
+                  label: 'Max Items in Carousel',
+                  min: 1,
+                  max: 20,
+                  value: this.properties.maxItemsInCarousel
+                }),
+                PropertyPaneSlider('slidesToShow',{
+                  label: 'Max Items to Show in View',
+                  min: 1,
+                  max: 3,
+                  value: this.properties.slidesToShow
+                }),
+                PropertyPaneSlider('slidesToScroll',{
+                  label: 'Items to Scroll',
+                  min: 1,
+                  max: 3,
+                  value: this.properties.slidesToScroll
                 }),
                 PropertyPaneTextField('contentTypeNameValue',{
                   value: this.properties.contentTypeNameValue,

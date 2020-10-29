@@ -27,9 +27,13 @@
       "properties": {
         "webPartTitle": "News",
         "showWebPartTitle": true,
-        "maxItemsToShow": 5,
+        "maxItemsInTileView": 5,
+        "maxItemsInCarousel": 5,
         "contentTypeNameValue": "Hanes Hero News",
-        "useCarouselOnly": true
+        "useCarouselOnly": true,
+        "slidesToShow": 1,
+        "slidesToScroll": 1,
+        "useCenterMode": false
       }
     }
   ]

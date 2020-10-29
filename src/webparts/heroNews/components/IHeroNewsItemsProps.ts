@@ -9,6 +9,9 @@ export interface IHeroNewsItemsProps {
   BannerImageResolution: number;
   NewsViewMode: number;
   displayMode: DisplayMode;
+  slidesToShow: number;
+  slidesToScroll: number;
+  useCenterMode: boolean;
 }
 export interface IHeroNewsItemBlockProps {
   BlockType: number;
