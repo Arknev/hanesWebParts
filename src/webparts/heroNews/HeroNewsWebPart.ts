@@ -18,7 +18,7 @@ import { override } from '@microsoft/decorators';
 import { CustomCss } from '../../common/cssInJs';
 import * as commonFunctions from '../../common/functions';
 import { graph, Group, GroupType, Groups, IGroup, IGroupAddResult, IGroups } from "@pnp/graph/presets/all";
-import { GetUserGroupMembership } from '../../services/Graph/GetUserGroupMembership';
+import { GetUserGroupMembership } from '../../services/graphcalls/GetUserGroupMembership';
 export interface IHeroNewsWebPartProps {
   webPartTitle: string;
   viewMode: number;
