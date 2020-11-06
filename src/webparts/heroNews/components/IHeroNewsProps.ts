@@ -4,6 +4,7 @@ import { DisplayMode } from '@microsoft/sp-core-library';
 import { IReadonlyTheme } from '@microsoft/sp-component-base';
 export interface IHeroNewsProps {
   webPartTitle: string;
+  viewMode: number;
   showWebPartTitle: boolean;
   useCarouselOnly: boolean;
   WebPartContext: WebPartContext;
@@ -17,6 +18,9 @@ export interface IHeroNewsProps {
   slidesToScroll: number;
   useCenterMode: boolean;
   contentTypeNameValue: string;
+  NewsRowHeight: number;
+  NewsBannerImageResolution: number;
+  NewsContainerWidth: number;
 }
 export interface INewsPostItem{
   key: string;

@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useEffect, useState } from 'react';
 import appCssClass from './HeroNews.module.scss';
 import { IHeroNewsProps, INewsPostItem } from './IHeroNewsProps';
 import { NewsPostItemsDisplay } from './HeroNewsItems';
@@ -7,10 +8,274 @@ import { Web } from '@pnp/sp/webs';
 import moment from 'moment';
 import { WebPartTitle } from '@pnp/spfx-controls-react/lib/WebPartTitle';
 import * as commonFunctions from '../../../common/functions';
+export function NewsItemsContainer(props: IHeroNewsProps) {
+  // let [NewsItemsState, setNewsItemsState] = useState<INewsPostItem[]>([]); // <INewsPostItem[]>()
+  let [NewsItemsState, setNewsItemsState] = useState(
+    {
+      NewsContentType: props.contentTypeNameValue,
+      // NewsItems: [],
+      NewsItems: [],
+      NewsItemsLoaded: false,
+      ErrorEncountered: false,
+      ErrorMessage: 'No Error'
+    }
+  );
+  // let [ErrorState, setErrorState] = useState(
+  //   {
+  //     ErrorEncountered: false,
+  //     ErrorMessage: 'No Error'
+  //   }
+  // );
+  let [NewsResizeState, setNewsResizeState] =
+    useState(
+      {
+        NewsRowHeight: props.NewsRowHeight,
+        NewsBannerImageResolution: props.NewsBannerImageResolution,
+        NewsContainerWidth: props.NewsContainerWidth
+      }
+    );
+  useEffect(() => {
+    const now: string = new Date().toISOString(); /** DEV: Ensure filter includes limiting items by created or firstpublish date */
+    let AllNewsItemsArray: INewsPostItem[] = [];
+    try {
+      Web(props.WebPartContext.pageContext.site.absoluteUrl)
+        .lists.getByTitle('Site Pages')
+        .items
+        .filter(`ContentType eq \'${props.contentTypeNameValue}\' and Created gt \'${moment().subtract(1, 'year').format('YYYY-MM-DD')}T00:00:00Z\'`)
+        .select('ID', 'GUID', 'Title', 'Created', 'FileRef', 'BannerImageUrl', 'Description', 'FirstPublishedDate', 'Created', 'ContentType/Id', 'ContentType/Name')
+        .expand('ContentType')
+        .orderBy('Created', false) //FirstPublishedDate
+        .get<INewsPostItem[]>()
+        .then(AllNewsItems => {
+          // console.log(AllNewsItems);
+          AllNewsItems.map((currNewsItem: INewsPostItem) => {
+            let BannerImageUrlVal = '';
+            let BannerImageHasURL = commonFunctions.funcCheckObjForProp(currNewsItem.BannerImageUrl, 'Url');
+            if (BannerImageHasURL === true) {
+              let BannerImageHasUrlValue = currNewsItem.BannerImageUrl['Url'];
+              BannerImageUrlVal = BannerImageHasUrlValue.indexOf('/_layouts/15/getpreview.ashx?') === -1 ? BannerImageHasUrlValue : BannerImageHasUrlValue.concat('&resolution=');
+            }
+            else {
+              BannerImageUrlVal = '/_layouts/15/images/sitepagethumbnail.png';
+            }
+            AllNewsItemsArray.push({
+              key: `newsPostItem-${currNewsItem.Id}-${currNewsItem.Created}`,
+              Title: currNewsItem.Title,
+              Id: currNewsItem.Id,
+              FileRef: currNewsItem.FileRef,
+              BannerImageUrl: BannerImageUrlVal,
+              Description: currNewsItem.Description,
+              Created: currNewsItem.Created,
+              FirstPublishedDate: currNewsItem.FirstPublishedDate
+            });
+          });
+          setNewsItemsState(
+            {
+              NewsContentType: props.contentTypeNameValue,
+              NewsItems: AllNewsItemsArray,
+              NewsItemsLoaded: true,
+              ErrorEncountered: false,
+              ErrorMessage: 'No Error'
+            }
+          );
+        });
+    }
+    catch (error) {
+      setNewsItemsState(
+        {
+          NewsContentType: props.contentTypeNameValue,
+          NewsItems: [],
+          NewsItemsLoaded: false,
+          ErrorEncountered: false,
+          ErrorMessage: `${error.toString()}`
+        }
+      );
+    }
+  }, [props.contentTypeNameValue, props.viewMode]);
+  /**
+   * @param {number} ResizeCheckIncrement This number is used to reduce the number of times setState is called due to container resize.
+   */
+  let ResizeCheckIncrement: number = 0;
+  function handleResize(webPartBoundary) {
+    // console.log('webPartBoundary');
+    // console.log(webPartBoundary);
+    ResizeCheckIncrement += 1;
+    let CurrentResizeCheckIncrement = ResizeCheckIncrement;
+    // console.log('CurrentResizeCheckIncrement');
+    // console.log(CurrentResizeCheckIncrement);
+    // console.log('ResizeCheckIncrement');
+    // console.log(ResizeCheckIncrement);
+    setTimeout(() => {
+      if (CurrentResizeCheckIncrement === ResizeCheckIncrement) {
+        // console.log(' ---------------------------------- webPartBoundary');
+        // console.log(webPartBoundary);
+        let CurrWebPartWidth = webPartBoundary.width;
+        let ItemWidthValue = commonFunctions.GetContainerWidthBasedValue(1, CurrWebPartWidth);
+        let BannerImageResolution = commonFunctions.GetContainerWidthBasedValue(2, CurrWebPartWidth);
+        setNewsResizeState(
+          {
+            NewsRowHeight: ItemWidthValue,
+            NewsBannerImageResolution: BannerImageResolution,
+            NewsContainerWidth: CurrWebPartWidth
+          }
+        );
+        // /** Is most recent increment, set state */
+        // if (NewsResizeState.NewsRowHeight === ItemWidthValue && NewsResizeState.NewsBannerImageResolution === BannerImageResolution) {
+        //   /** Width match, do nothing */
+        // }
+        // else {
+        //   /** Width mismatch, update state */
+        //   console.log('0 ---------------------------------- CurrWebPartWidth');
+        //   console.log(CurrWebPartWidth);
+        //   console.log('Before set');
+        //   console.log(NewsResizeState);
+        // }
+        /** Resize handled, reset increment */
+        ResizeCheckIncrement = 0;
+      }
+      else {
+        /** Is old increment, do nothing */
+      }
+    }, 1000);
+    return true;
+  }
+  useEffect(() => {
+    window.addEventListener('resize', (e: Event) => {
+      // console.log('2 ResizeCheckIncrement');
+      // console.log(ResizeCheckIncrement);
+      handleResize(props.WebPartContext.domElement.getBoundingClientRect());
+    });
+    return () => {
+      window.removeEventListener('resize', (e: Event) => {
+        // console.log('3 ------------------------------------------ ResizeCheckIncrement');
+        // console.log(ResizeCheckIncrement);
+        handleResize(props.WebPartContext.domElement.getBoundingClientRect());
+      });
+    };
+  }, []);
+  // const BuildNewsItemsArray =
+  //   NewsItemsState.NewsItems.map((currNewsItem: INewsPostItem) => {
+  //     let AllNewsItemsArray: INewsPostItem[] = [];
+  //     let BannerImageUrlVal = '';
+  //     let BannerImageHasURL = commonFunctions.funcCheckObjForProp(currNewsItem.BannerImageUrl, 'Url');
+  //     if (BannerImageHasURL === true) {
+  //       let BannerImageHasUrlValue = currNewsItem.BannerImageUrl['Url'];
+  //       BannerImageUrlVal = BannerImageHasUrlValue.indexOf('/_layouts/15/getpreview.ashx?') === -1 ? BannerImageHasUrlValue : BannerImageHasUrlValue.concat('&resolution=');
+  //     }
+  //     else {
+  //       BannerImageUrlVal = '/_layouts/15/images/sitepagethumbnail.png';
+  //     }
+  //     AllNewsItemsArray.push({
+  //       key: `newsPostItem-${currNewsItem.Id}-${currNewsItem.Created}`,
+  //       Title: currNewsItem.Title,
+  //       Id: currNewsItem.Id,
+  //       FileRef: currNewsItem.FileRef,
+  //       BannerImageUrl: BannerImageUrlVal,
+  //       Description: currNewsItem.Description,
+  //       Created: currNewsItem.Created,
+  //       FirstPublishedDate: currNewsItem.FirstPublishedDate
+  //     });
+  //     return AllNewsItemsArray
+  //   });
+  let ViewHeaderJSX: any =
+    <WebPartTitle
+      key={`webPartTitle-${props.WebPartContext.instanceId}`}
+      displayMode={props.displayMode}
+      title={props.webPartTitle}
+      updateProperty={props.updateWpTitleProperty}
+      className={props.customAppCss.webPartTitle}
+      themeVariant={props.themeVariant}
+    />
+    ;
+  let ViewContentJSX: any;
+  let ViewRenderJSX: any;
+  // let ViewContentRowsJSX: any = [];
+  if (NewsItemsState.ErrorEncountered === true) {
+    /** Error Encountered */
+    ViewContentJSX = commonFunctions.GetMessageBarJSX(99, NewsItemsState.ErrorMessage);
+  }
+  else {
+    if (props.contentTypeNameValue !== NewsItemsState.NewsContentType || NewsItemsState.NewsItemsLoaded === false) {
+      /** Items not loaded, get news items */
+      ViewContentJSX =
+        <Stack key={`spinnerStack-${props.WebPartContext.instanceId}`}>
+          <Spinner labelPosition='right' label='Loading...' />
+        </Stack>
+        ;
+    }
+    else {
+      /** Items loaded */
+      if (NewsItemsState.NewsItems.length === 0) {
+        /** No items found */
+        ViewContentJSX = commonFunctions.GetMessageBarJSX(0);
+      }
+      else {
+        /** Items found */
+        if (NewsResizeState.NewsContainerWidth < 640 || props.useCarouselOnly) {
+          /** Carousel View */
+          // console.log('------------------------------------------------------------------------------------------------------------------');
+          // console.log('0 ---------------------------------- NewsResizeState');
+          // console.log(NewsResizeState);
+          // console.log(' 99 -------------------------------------------- NewsResizeState.NewsRowHeight');
+          // console.log(NewsResizeState.NewsRowHeight);
+          ViewContentJSX =
+            <NewsPostItemsDisplay
+              NewsItemsCount={props.maxItemsInCarousel > NewsItemsState.NewsItems.length ? NewsItemsState.NewsItems.length : props.maxItemsInCarousel}
+              NewsRowHeight={NewsResizeState.NewsRowHeight}
+              NewsItemsArray={NewsItemsState.NewsItems}
+              customAppCss={props.customAppCss}
+              BannerImageResolution={NewsResizeState.NewsBannerImageResolution}
+              NewsViewMode={1}
+              displayMode={props.displayMode}
+              slidesToScroll={props.slidesToScroll}
+              slidesToShow={props.slidesToShow}
+              useCenterMode={props.useCenterMode}
+            />
+            ;
+        }
+        else {
+          /** Tile View */
+          ViewContentJSX =
+            <NewsPostItemsDisplay
+              NewsItemsCount={props.maxItemsInTileView > NewsItemsState.NewsItems.length ? NewsItemsState.NewsItems.length : props.maxItemsInTileView}
+              NewsRowHeight={NewsResizeState.NewsRowHeight}
+              NewsItemsArray={NewsItemsState.NewsItems}
+              customAppCss={props.customAppCss}
+              BannerImageResolution={NewsResizeState.NewsBannerImageResolution}
+              NewsViewMode={0}
+              displayMode={props.displayMode}
+              slidesToScroll={props.slidesToScroll}
+              slidesToShow={props.slidesToShow}
+              useCenterMode={props.useCenterMode}
+            />
+            ;
+        }
+      }
+    }
+  }
+  ViewRenderJSX =
+    <Stack className={appCssClass.hhHeroNews} key={`rootStack-${props.WebPartContext.instanceId}`}>
+      {props.showWebPartTitle === true ? nullRender : ViewHeaderJSX}
+      {ViewContentJSX}
+    </Stack>
+    ;
+  return <div>{ViewRenderJSX}</div>;
+}
+
+
+
+
+
+
+
+
+
+
+
 /**
  * This component handles item queries, item processing, and error message rendering. Calls child component to build item JSX for rendering.
  */
-export default class HeroNews extends React.Component<IHeroNewsProps, {
+export class HeroNews extends React.Component<IHeroNewsProps, {
   ErrorEncountered: boolean;
   ErrorMessage: string;
   NewsItemsLoaded: boolean;
@@ -73,7 +338,7 @@ export default class HeroNews extends React.Component<IHeroNewsProps, {
    */
   private async GetAllNewsItems() {
     const CurrSiteWeb = Web(this.props.WebPartContext.pageContext.site.absoluteUrl);
-    console.log(CurrSiteWeb);
+    // console.log(CurrSiteWeb);
     let AllNewsItemsArray: INewsPostItem[] = [];
     let CurrGetAllNewsItemsResponse: any[] = [];
     let QueryFilterString: string = `ContentType eq \'${this.props.contentTypeNameValue}\' and Article_x0020_Publish_x0020_Date le \'${moment().format('YYYY-MM-DD')}T23:59:59Z\' and Created gt \'${moment().subtract(1, 'year').format('YYYY-MM-DD')}T00:00:00Z\'`; //FirstPublishedDate
@@ -96,7 +361,7 @@ export default class HeroNews extends React.Component<IHeroNewsProps, {
       .orderBy('Created', false) //FirstPublishedDate
       .get()
       ;
-    console.log(CurrGetAllNewsItemsResponse);
+    // console.log(CurrGetAllNewsItemsResponse);
     CurrGetAllNewsItemsResponse.map(NewsPostItem => {
       let BannerImageUrlVal = '';
       let BannerImageHasURL = commonFunctions.funcCheckObjForProp(NewsPostItem.BannerImageUrl, 'Url');
@@ -117,7 +382,7 @@ export default class HeroNews extends React.Component<IHeroNewsProps, {
         FirstPublishedDate: NewsPostItem.FirstPublishedDate
       });
     });
-    console.log(AllNewsItemsArray);
+    // console.log(AllNewsItemsArray);
     return AllNewsItemsArray;
   }
   /**

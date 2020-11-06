@@ -26,6 +26,7 @@
       "officeFabricIconFontName": "Page",
       "properties": {
         "webPartTitle": "News",
+        "viewMode": 1,
         "showWebPartTitle": true,
         "maxItemsInTileView": 5,
         "maxItemsInCarousel": 5,

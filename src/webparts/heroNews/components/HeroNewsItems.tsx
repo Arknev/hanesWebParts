@@ -24,6 +24,7 @@ export const NewsPostItemBlock: React.FunctionComponent<IHeroNewsItemBlockProps>
   let NewsItemFontSize: string = props.customAppCss.heroNewsHeaderTextLarge;
   let AdjustBannerImageResolution: number = props.BannerImageResolution;
   let NewsItemPadding: string = '0 28px 28px 28px';
+  let BannerImageResolutionFullPath: string = null;
   if (props.BlockType === 1) {
     NewsItemFontSize = props.customAppCss.heroNewsHeaderTextLarge;
     AdjustBannerImageResolution = props.BannerImageResolution;
@@ -41,6 +42,8 @@ export const NewsPostItemBlock: React.FunctionComponent<IHeroNewsItemBlockProps>
     AdjustBannerImageResolution = props.BannerImageResolution <= 1 ? props.BannerImageResolution : props.BannerImageResolution - 1; //DEV: add adjustment to account for "onlyUseCarousel"
     NewsItemPadding = '0 28px 45px 85px';
   }
+  // BannerImageHasUrlValue.indexOf('/_layouts/15/getpreview.ashx?') === -1
+  BannerImageResolutionFullPath = props.NewsItemProps.BannerImageUrl.indexOf('/_layouts/15/images/sitepagethumbnail.png') >= 0 ? props.NewsItemProps.BannerImageUrl : `${props.NewsItemProps.BannerImageUrl}${AdjustBannerImageResolution}`;
   NewsItemBlockJSX =
     <Stack
       key={`heroNewsItemContainer${props.NewsItemProps.Id}`}
@@ -51,7 +54,7 @@ export const NewsPostItemBlock: React.FunctionComponent<IHeroNewsItemBlockProps>
         className={appCssClass.heroNewsImageContainer}
         style={
           {
-            background: `url("${props.NewsItemProps.BannerImageUrl}${AdjustBannerImageResolution}") center / cover no-repeat`,
+            background: `url("${BannerImageResolutionFullPath}") center / cover no-repeat`,
           }
         }
       >

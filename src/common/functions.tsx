@@ -2,6 +2,7 @@ import * as React from 'react';
 import { IStyle } from '@uifabric/styling';
 import { ISwatchColor } from '@pnp/spfx-controls-react/lib/controls/richText/SwatchColorPickerGroup.types';
 import { MessageBar, MessageBarType } from 'office-ui-fabric-react';
+import { useEffect } from 'react';
 /**
  * @description Custom colors for RTE/Quill font color palette
  * @returns {array} Array of ISwatchColor objects
@@ -290,3 +291,9 @@ export function GetMessageBarJSX(SelectedMessage: number, MessageTextOverride?: 
     ;
   return MessageJSX;
 }
+export const useResizeEvent = (callback:any) => {
+  useEffect(() => {
+    window.addEventListener('resize', callback);
+    return () => window.removeEventListener('resize', callback);
+  }, [callback]);
+};

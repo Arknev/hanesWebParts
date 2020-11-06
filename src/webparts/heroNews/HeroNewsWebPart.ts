@@ -5,17 +5,23 @@ import {
   IPropertyPaneConfiguration,
   PropertyPaneTextField,
   PropertyPaneCheckbox,
-  PropertyPaneSlider
+  PropertyPaneSlider,
+  IPropertyPaneDropdownOption,
+  PropertyPaneDropdown
 } from '@microsoft/sp-property-pane';
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 import * as strings from 'HeroNewsWebPartStrings';
-import HeroNews from './components/HeroNews';
+import { NewsItemsContainer } from './components/HeroNews';
 import { IHeroNewsProps } from './components/IHeroNewsProps';
 import { ThemeProvider, IReadonlyTheme, ThemeChangedEventArgs } from '@microsoft/sp-component-base';
 import { override } from '@microsoft/decorators';
 import { CustomCss } from '../../common/cssInJs';
+import * as commonFunctions from '../../common/functions';
+import { graph, Group, GroupType, Groups, IGroup, IGroupAddResult, IGroups } from "@pnp/graph/presets/all";
+import { GetUserGroupMembership } from '../../services/Graph/GetUserGroupMembership';
 export interface IHeroNewsWebPartProps {
   webPartTitle: string;
+  viewMode: number;
   showWebPartTitle: boolean;
   useCarouselOnly: boolean;
   maxItemsInTileView: number;
@@ -26,15 +32,31 @@ export interface IHeroNewsWebPartProps {
   contentTypeNameValue: string;
 }
 export default class HeroNewsWebPart extends BaseClientSideWebPart <IHeroNewsWebPartProps> {
+  public async GetThatGraphStuffs() {
+    let MyGraphTest = await GetUserGroupMembership({RequestTimeStamp:new Date()});
+    console.log(' ----------------------------------------------------------------------- MyGraphTest');
+    console.log(MyGraphTest);
+  }
   private _themeProvider: ThemeProvider;
   private _themeVariant: IReadonlyTheme | undefined;
   @override
-  protected onInit(): Promise<void> {
+  public onInit(): Promise<void> {
     this._themeProvider = this.context.serviceScope.consume(ThemeProvider.serviceKey);
     this._themeVariant = this._themeProvider.tryGetTheme();
     this._themeProvider.themeChangedEvent.add(this, this._handleThemeChangedEvent);
-    return super.onInit();
+    return super.onInit().then(_ => {
+      graph.setup({
+        spfxContext: this.context
+      });
+      this.GetThatGraphStuffs();
+    });
   }
+  // protected onInit(): Promise<void> {
+  //   this._themeProvider = this.context.serviceScope.consume(ThemeProvider.serviceKey);
+  //   this._themeVariant = this._themeProvider.tryGetTheme();
+  //   this._themeProvider.themeChangedEvent.add(this, this._handleThemeChangedEvent);
+  //   return super.onInit();
+  // }
   /**
    * Update the current theme variant reference and re-render.
    * @param args The new theme
@@ -45,9 +67,10 @@ export default class HeroNewsWebPart extends BaseClientSideWebPart <IHeroNewsWeb
   }
   public render(): void {
     const element: React.ReactElement<IHeroNewsProps> = React.createElement(
-      HeroNews,
+      NewsItemsContainer,
       {
         webPartTitle: this.properties.webPartTitle,
+        viewMode: this.properties.viewMode,
         showWebPartTitle: this.properties.showWebPartTitle,
         useCarouselOnly: this.properties.useCarouselOnly,
         customAppCss: CustomCss(this._themeVariant),
@@ -60,7 +83,10 @@ export default class HeroNewsWebPart extends BaseClientSideWebPart <IHeroNewsWeb
         slidesToShow: this.properties.slidesToShow,
         slidesToScroll: this.properties.slidesToScroll,
         useCenterMode: this.properties.useCenterMode,
-        contentTypeNameValue: this.properties.contentTypeNameValue
+        contentTypeNameValue: this.properties.contentTypeNameValue,
+        NewsRowHeight: Number(commonFunctions.GetContainerWidthBasedValue(1, this.context.domElement.getBoundingClientRect().width)),
+        NewsBannerImageResolution: Number(commonFunctions.GetContainerWidthBasedValue(2, this.context.domElement.getBoundingClientRect().width)),
+        NewsContainerWidth: Number(this.context.domElement.getBoundingClientRect().width)
       }
     );
     ReactDom.render(element, this.domElement);
@@ -73,6 +99,12 @@ export default class HeroNewsWebPart extends BaseClientSideWebPart <IHeroNewsWeb
     return Version.parse('1.0');
   }
   protected getPropertyPaneConfiguration(): IPropertyPaneConfiguration {
+    const viewTypeOptions: IPropertyPaneDropdownOption[] = [
+      { key: 1, text: 'Hero News' },
+      { key: 2, text: 'Featured Articles' },
+      { key: 3, text: 'Company News' },
+      { key: 4, text: 'Spotlight' },
+    ];
     return {
       pages: [
         {
@@ -83,6 +115,11 @@ export default class HeroNewsWebPart extends BaseClientSideWebPart <IHeroNewsWeb
             {
               groupName: strings.BasicGroupName,
               groupFields: [
+                PropertyPaneDropdown('viewMode', {
+                  label: 'Select View Type',
+                  options: viewTypeOptions,
+                  selectedKey: this.properties.viewMode
+                }),
                 PropertyPaneCheckbox('showWebPartTitle', {
                   text: 'Hide Web Part Title',
                   checked: this.properties.showWebPartTitle
