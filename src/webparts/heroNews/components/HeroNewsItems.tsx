@@ -48,7 +48,7 @@ export const NewsPostItemBlock: React.FunctionComponent<IHeroNewsItemBlockProps>
     <Stack
       key={`heroNewsItemContainer${props.NewsItemProps.Id}`}
       className={props.BlockType === 4 ? appCssClass.heroNewsCarouselItemContainer : appCssClass.heroNewsItemContainer}
-      onClick={props.displayMode === DisplayMode.Read ? () => commonFunctions.FuncGoToPage(props.NewsItemProps.FileRef) : () => {}}
+      onClick={props.displayMode === DisplayMode.Read ? () => commonFunctions.FuncGoToPage(props.NewsItemProps.FileRef) : () => { }}
     >
       <div
         className={appCssClass.heroNewsImageContainer}

@@ -18,7 +18,11 @@ import { override } from '@microsoft/decorators';
 import { CustomCss } from '../../common/cssInJs';
 import * as commonFunctions from '../../common/functions';
 import { graph, Group, GroupType, Groups, IGroup, IGroupAddResult, IGroups } from "@pnp/graph/presets/all";
-import { GetUserGroupMembership } from '../../services/graphcalls/GetUserGroupMembership';
+import { MSGraphClient } from '@microsoft/sp-http';
+import * as MicrosoftGraph from '@microsoft/microsoft-graph-types';
+import { sp } from "@pnp/sp/presets/all";
+import { isArray } from '@pnp/common';
+// import { GetUserGroupMembership } from '../../services/graphcalls/GetUserGroupMembership';
 export interface IHeroNewsWebPartProps {
   webPartTitle: string;
   viewMode: number;
@@ -30,13 +34,14 @@ export interface IHeroNewsWebPartProps {
   slidesToScroll: number;
   useCenterMode: boolean;
   contentTypeNameValue: string;
+  userGroupMembership: [];
 }
-export default class HeroNewsWebPart extends BaseClientSideWebPart <IHeroNewsWebPartProps> {
-  public async GetThatGraphStuffs() {
-    let MyGraphTest = await GetUserGroupMembership({RequestTimeStamp:new Date()});
-    console.log(' ----------------------------------------------------------------------- MyGraphTest');
-    console.log(MyGraphTest);
-  }
+export default class HeroNewsWebPart extends BaseClientSideWebPart<IHeroNewsWebPartProps> {
+  // public async GetThatGraphStuffs() {
+  //   let MyGraphTest = await GetUserGroupMembership({RequestTimeStamp:new Date()});
+  //   console.log(' ------------------------------------------------------------------------ MyGraphTest');
+  //   console.log(MyGraphTest);
+  // }
   private _themeProvider: ThemeProvider;
   private _themeVariant: IReadonlyTheme | undefined;
   @override
@@ -45,10 +50,10 @@ export default class HeroNewsWebPart extends BaseClientSideWebPart <IHeroNewsWeb
     this._themeVariant = this._themeProvider.tryGetTheme();
     this._themeProvider.themeChangedEvent.add(this, this._handleThemeChangedEvent);
     return super.onInit().then(_ => {
-      graph.setup({
+      sp.setup({
         spfxContext: this.context
       });
-      this.GetThatGraphStuffs();
+      // this.GetThatGraphStuffs();
     });
   }
   // protected onInit(): Promise<void> {
@@ -66,6 +71,57 @@ export default class HeroNewsWebPart extends BaseClientSideWebPart <IHeroNewsWeb
     this.render();
   }
   public render(): void {
+    console.log(' 1 -------------------------------------- this.properties.userGroupMembership');
+    console.log(this.properties.userGroupMembership);
+    if (this.properties.userGroupMembership === null || this.properties.userGroupMembership === undefined) {
+      console.log(' 2 -------------------------------------- this.properties.userGroupMembership');
+      console.log(this.properties.userGroupMembership);
+      this.context.msGraphClientFactory.getClient().then((client: MSGraphClient): void => {
+        // get information about the current user from the Microsoft Graph
+        client
+          // .api('/me/transitiveMemberOf/microsoft.graph.group')
+          .api('/me/transitiveMemberOf')
+          .header('ConsistencyLevel', 'eventual')
+          // .responseType('')
+          .version('v1.0')
+          .get((graphCallError, graphCallGroups, graphCallRawResponse?: any) => {
+            if (graphCallError) {
+              console.log('graphCallError');
+              console.log(graphCallError);
+            }
+            else if (graphCallGroups !== undefined) {
+              console.log('graphCallGroups');
+              console.log(graphCallGroups.value);
+              if (isArray(graphCallGroups.value)) {
+                let GroupsFromGraphArray: any = [];
+                for (let MembershipIndex = 0; MembershipIndex < graphCallGroups.value.length; MembershipIndex++) {
+                  const currGroupItem = graphCallGroups.value[MembershipIndex];
+                  GroupsFromGraphArray.push(currGroupItem.id);
+                }
+                this.properties.userGroupMembership = GroupsFromGraphArray;
+                this.render();
+              }
+            }
+            else {
+              console.log('nothing returned');
+            }
+          });
+        // handle the response
+        // console.log('rawResponse');
+        // console.log(rawResponse);
+        // let GroupsFromGraph = groups.map(currGroup => GroupsFromGraphArray.push(currGroup.id));
+        // console.log(' 3 -------------------------------------- GroupsFromGraphArray');
+        // console.log(GroupsFromGraphArray);
+        // this.properties.userGroupMembership = GroupsFromGraphArray;
+        // console.log(' 4 -------------------------------------- this.properties.userGroupMembership');
+        // console.log(this.properties.userGroupMembership);
+        // this.render();
+      });
+    }
+    // graph.groups.get().then(groups => {
+    //   let GraphStuffs = `Groups: <ul>${groups.map(g => `<li>${g.displayName}</li>`).join("")}</ul>`;
+    //   console.log(GraphStuffs);
+    // });
     const element: React.ReactElement<IHeroNewsProps> = React.createElement(
       NewsItemsContainer,
       {
@@ -84,6 +140,7 @@ export default class HeroNewsWebPart extends BaseClientSideWebPart <IHeroNewsWeb
         slidesToScroll: this.properties.slidesToScroll,
         useCenterMode: this.properties.useCenterMode,
         contentTypeNameValue: this.properties.contentTypeNameValue,
+        userGroupMembership: this.properties.userGroupMembership || [],
         NewsRowHeight: Number(commonFunctions.GetContainerWidthBasedValue(1, this.context.domElement.getBoundingClientRect().width)),
         NewsBannerImageResolution: Number(commonFunctions.GetContainerWidthBasedValue(2, this.context.domElement.getBoundingClientRect().width)),
         NewsContainerWidth: Number(this.context.domElement.getBoundingClientRect().width)
@@ -133,32 +190,32 @@ export default class HeroNewsWebPart extends BaseClientSideWebPart <IHeroNewsWeb
                   checked: this.properties.useCenterMode,
                   disabled: this.properties.useCarouselOnly == true ? false : true
                 }),
-                PropertyPaneSlider('maxItemsInTileView',{
+                PropertyPaneSlider('maxItemsInTileView', {
                   label: 'Max Items in Tile View',
                   min: 1,
                   max: 5,
                   value: this.properties.maxItemsInTileView,
                   disabled: this.properties.useCarouselOnly == true ? true : false
                 }),
-                PropertyPaneSlider('maxItemsInCarousel',{
+                PropertyPaneSlider('maxItemsInCarousel', {
                   label: 'Max Items in Carousel',
                   min: 1,
                   max: 20,
                   value: this.properties.maxItemsInCarousel
                 }),
-                PropertyPaneSlider('slidesToShow',{
+                PropertyPaneSlider('slidesToShow', {
                   label: 'Max Items to Show in View',
                   min: 1,
                   max: 3,
                   value: this.properties.slidesToShow
                 }),
-                PropertyPaneSlider('slidesToScroll',{
+                PropertyPaneSlider('slidesToScroll', {
                   label: 'Items to Scroll',
                   min: 1,
                   max: 3,
                   value: this.properties.slidesToScroll
                 }),
-                PropertyPaneTextField('contentTypeNameValue',{
+                PropertyPaneTextField('contentTypeNameValue', {
                   value: this.properties.contentTypeNameValue,
                   label: "Content Type Name"
                 })

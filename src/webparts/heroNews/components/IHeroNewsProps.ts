@@ -18,6 +18,7 @@ export interface IHeroNewsProps {
   slidesToScroll: number;
   useCenterMode: boolean;
   contentTypeNameValue: string;
+  userGroupMembership: [];
   NewsRowHeight: number;
   NewsBannerImageResolution: number;
   NewsContainerWidth: number;

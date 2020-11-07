@@ -253,9 +253,17 @@ export function NewsItemsContainer(props: IHeroNewsProps) {
       }
     }
   }
+  let GroupIdsJSX = [];
+  console.log('props.userGroupMembership');
+  console.log(props.userGroupMembership);
+  props.userGroupMembership.forEach(currGroupItem => {
+    let currGroupItemJSX = <div>{currGroupItem}</div>;
+    GroupIdsJSX.push(currGroupItemJSX);
+  });
   ViewRenderJSX =
     <Stack className={appCssClass.hhHeroNews} key={`rootStack-${props.WebPartContext.instanceId}`}>
       {props.showWebPartTitle === true ? nullRender : ViewHeaderJSX}
+      {GroupIdsJSX}
       {ViewContentJSX}
     </Stack>
     ;
