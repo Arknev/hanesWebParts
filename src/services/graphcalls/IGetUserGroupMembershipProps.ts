@@ -1,3 +1,4 @@
+import { WebPartContext } from '@microsoft/sp-webpart-base';
 export interface IGetUserGroupMembershipProps{
-  RequestTimeStamp: Date;
+  context: WebPartContext;
 }

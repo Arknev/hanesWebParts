@@ -43,7 +43,11 @@ export const NewsPostItemBlock: React.FunctionComponent<IHeroNewsItemBlockProps>
     NewsItemPadding = '0 28px 45px 85px';
   }
   // BannerImageHasUrlValue.indexOf('/_layouts/15/getpreview.ashx?') === -1
-  BannerImageResolutionFullPath = props.NewsItemProps.BannerImageUrl.indexOf('/_layouts/15/images/sitepagethumbnail.png') >= 0 ? props.NewsItemProps.BannerImageUrl : `${props.NewsItemProps.BannerImageUrl}${AdjustBannerImageResolution}`;
+  // BannerImageResolutionFullPath = props.NewsItemProps.BannerImageUrl.indexOf('/_layouts/15/images/sitepagethumbnail.png') >= 0 ? props.NewsItemProps.BannerImageUrl : `${props.NewsItemProps.BannerImageUrl}${AdjustBannerImageResolution}`;
+  BannerImageResolutionFullPath = props.NewsItemProps.BannerImageUrl.indexOf('getpreview.ashx?') >= 0 ?
+    `${props.NewsItemProps.BannerImageUrl}${AdjustBannerImageResolution}` :
+    props.NewsItemProps.BannerImageUrl
+    ;
   NewsItemBlockJSX =
     <Stack
       key={`heroNewsItemContainer${props.NewsItemProps.Id}`}

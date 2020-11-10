@@ -18,7 +18,8 @@ export interface IHeroNewsProps {
   slidesToScroll: number;
   useCenterMode: boolean;
   contentTypeNameValue: string;
-  userGroupMembership: [];
+  userGroupMembership: any;
+  userGroupMembershipLoaded: boolean;
   NewsRowHeight: number;
   NewsBannerImageResolution: number;
   NewsContainerWidth: number;
@@ -32,4 +33,5 @@ export interface INewsPostItem{
   Description: string;
   Created: string;
   FirstPublishedDate: string;
+  Audiences: string;
 }

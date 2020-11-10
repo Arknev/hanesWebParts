@@ -34,8 +34,7 @@
         "useCarouselOnly": true,
         "slidesToShow": 1,
         "slidesToScroll": 1,
-        "useCenterMode": false,
-        "userGroupMembership": null
+        "useCenterMode": false
       }
     }
   ]

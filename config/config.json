@@ -9,12 +9,21 @@
           "manifest": "./src/webparts/heroNews/HeroNewsWebPart.manifest.json"
         }
       ]
+    },
+    "call-to-action-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/callToAction/CallToActionWebPart.js",
+          "manifest": "./src/webparts/callToAction/CallToActionWebPart.manifest.json"
+        }
+      ]
     }
   },
   "externals": {},
   "localizedResources": {
     "HeroNewsWebPartStrings": "lib/webparts/heroNews/loc/{locale}.js",
     "ControlStrings": "node_modules/@pnp/spfx-controls-react/lib/loc/{locale}.js",
-    "PropertyControlStrings": "node_modules/@pnp/spfx-property-controls/lib/loc/{locale}.js"
+    "PropertyControlStrings": "node_modules/@pnp/spfx-property-controls/lib/loc/{locale}.js",
+    "CallToActionWebPartStrings": "lib/webparts/callToAction/loc/{locale}.js"
   }
 }

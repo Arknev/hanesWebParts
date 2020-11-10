@@ -22,7 +22,7 @@ import { MSGraphClient } from '@microsoft/sp-http';
 import * as MicrosoftGraph from '@microsoft/microsoft-graph-types';
 import { sp } from "@pnp/sp/presets/all";
 import { isArray } from '@pnp/common';
-// import { GetUserGroupMembership } from '../../services/graphcalls/GetUserGroupMembership';
+import { GetUserGroupMembership } from '../../services/graphcalls/GetUserGroupMembership';
 export interface IHeroNewsWebPartProps {
   webPartTitle: string;
   viewMode: number;
@@ -34,34 +34,27 @@ export interface IHeroNewsWebPartProps {
   slidesToScroll: number;
   useCenterMode: boolean;
   contentTypeNameValue: string;
-  userGroupMembership: [];
 }
 export default class HeroNewsWebPart extends BaseClientSideWebPart<IHeroNewsWebPartProps> {
-  // public async GetThatGraphStuffs() {
-  //   let MyGraphTest = await GetUserGroupMembership({RequestTimeStamp:new Date()});
-  //   console.log(' ------------------------------------------------------------------------ MyGraphTest');
-  //   console.log(MyGraphTest);
-  // }
   private _themeProvider: ThemeProvider;
   private _themeVariant: IReadonlyTheme | undefined;
+  private userGroupMembership: [];
+  private userGroupMembershipLoaded: boolean;
   @override
   public onInit(): Promise<void> {
     this._themeProvider = this.context.serviceScope.consume(ThemeProvider.serviceKey);
     this._themeVariant = this._themeProvider.tryGetTheme();
     this._themeProvider.themeChangedEvent.add(this, this._handleThemeChangedEvent);
+    // console.log(' 000 -------------------------------------- userGroupMembership');
+    // console.log(this.userGroupMembership);
+    this.userGroupMembership = [];
+    this.userGroupMembershipLoaded = false;
     return super.onInit().then(_ => {
       sp.setup({
         spfxContext: this.context
       });
-      // this.GetThatGraphStuffs();
     });
   }
-  // protected onInit(): Promise<void> {
-  //   this._themeProvider = this.context.serviceScope.consume(ThemeProvider.serviceKey);
-  //   this._themeVariant = this._themeProvider.tryGetTheme();
-  //   this._themeProvider.themeChangedEvent.add(this, this._handleThemeChangedEvent);
-  //   return super.onInit();
-  // }
   /**
    * Update the current theme variant reference and re-render.
    * @param args The new theme
@@ -70,80 +63,39 @@ export default class HeroNewsWebPart extends BaseClientSideWebPart<IHeroNewsWebP
     this._themeVariant = args.theme;
     this.render();
   }
-  public render(): void {
-    console.log(' 1 -------------------------------------- this.properties.userGroupMembership');
-    console.log(this.properties.userGroupMembership);
-    if (this.properties.userGroupMembership === null || this.properties.userGroupMembership === undefined) {
-      console.log(' 2 -------------------------------------- this.properties.userGroupMembership');
-      console.log(this.properties.userGroupMembership);
-      this.context.msGraphClientFactory.getClient().then((client: MSGraphClient): void => {
-        // get information about the current user from the Microsoft Graph
-        client
-          // .api('/me/transitiveMemberOf/microsoft.graph.group')
-          .api('/me/transitiveMemberOf')
-          .header('ConsistencyLevel', 'eventual')
-          // .responseType('')
-          .version('v1.0')
-          .get((graphCallError, graphCallGroups, graphCallRawResponse?: any) => {
-            if (graphCallError) {
-              console.log('graphCallError');
-              console.log(graphCallError);
-            }
-            else if (graphCallGroups !== undefined) {
-              console.log('graphCallGroups');
-              console.log(graphCallGroups.value);
-              if (isArray(graphCallGroups.value)) {
-                let GroupsFromGraphArray: any = [];
-                for (let MembershipIndex = 0; MembershipIndex < graphCallGroups.value.length; MembershipIndex++) {
-                  const currGroupItem = graphCallGroups.value[MembershipIndex];
-                  GroupsFromGraphArray.push(currGroupItem.id);
-                }
-                this.properties.userGroupMembership = GroupsFromGraphArray;
-                this.render();
-              }
-            }
-            else {
-              console.log('nothing returned');
-            }
-          });
-        // handle the response
-        // console.log('rawResponse');
-        // console.log(rawResponse);
-        // let GroupsFromGraph = groups.map(currGroup => GroupsFromGraphArray.push(currGroup.id));
-        // console.log(' 3 -------------------------------------- GroupsFromGraphArray');
-        // console.log(GroupsFromGraphArray);
-        // this.properties.userGroupMembership = GroupsFromGraphArray;
-        // console.log(' 4 -------------------------------------- this.properties.userGroupMembership');
-        // console.log(this.properties.userGroupMembership);
-        // this.render();
-      });
+  public async GetUserGroupMembership() {
+    if (this.userGroupMembershipLoaded !== true) {
+      let UserGroupMembershipArray: any = await GetUserGroupMembership({context: this.context});
+      this.userGroupMembership = UserGroupMembershipArray;
+      this.userGroupMembershipLoaded = true;
+      this.render();
     }
-    // graph.groups.get().then(groups => {
-    //   let GraphStuffs = `Groups: <ul>${groups.map(g => `<li>${g.displayName}</li>`).join("")}</ul>`;
-    //   console.log(GraphStuffs);
-    // });
+  }
+  public render(): void {
+    this.GetUserGroupMembership();
     const element: React.ReactElement<IHeroNewsProps> = React.createElement(
       NewsItemsContainer,
       {
-        webPartTitle: this.properties.webPartTitle,
-        viewMode: this.properties.viewMode,
         showWebPartTitle: this.properties.showWebPartTitle,
-        useCarouselOnly: this.properties.useCarouselOnly,
+        webPartTitle: this.properties.webPartTitle,
+        updateWpTitleProperty: (value: string) => { this.properties.webPartTitle = value; },
+        themeVariant: this._themeVariant,
         customAppCss: CustomCss(this._themeVariant),
         WebPartContext: this.context,
+        userGroupMembership: this.userGroupMembership || [],
+        userGroupMembershipLoaded: this.userGroupMembershipLoaded,
+        NewsRowHeight: commonFunctions.GetContainerWidthBasedValue(1, this.context.domElement.getBoundingClientRect().width),
+        NewsBannerImageResolution: commonFunctions.GetContainerWidthBasedValue(2, this.context.domElement.getBoundingClientRect().width),
+        NewsContainerWidth: this.context.domElement.getBoundingClientRect().width,
+        viewMode: this.properties.viewMode,
+        useCarouselOnly: this.properties.useCarouselOnly,
         displayMode: this.displayMode,
-        themeVariant: this._themeVariant,
-        updateWpTitleProperty: (value: string) => { this.properties.webPartTitle = value; },
         maxItemsInTileView: this.properties.maxItemsInTileView,
         maxItemsInCarousel: this.properties.maxItemsInCarousel,
         slidesToShow: this.properties.slidesToShow,
         slidesToScroll: this.properties.slidesToScroll,
         useCenterMode: this.properties.useCenterMode,
         contentTypeNameValue: this.properties.contentTypeNameValue,
-        userGroupMembership: this.properties.userGroupMembership || [],
-        NewsRowHeight: Number(commonFunctions.GetContainerWidthBasedValue(1, this.context.domElement.getBoundingClientRect().width)),
-        NewsBannerImageResolution: Number(commonFunctions.GetContainerWidthBasedValue(2, this.context.domElement.getBoundingClientRect().width)),
-        NewsContainerWidth: Number(this.context.domElement.getBoundingClientRect().width)
       }
     );
     ReactDom.render(element, this.domElement);
@@ -151,7 +103,6 @@ export default class HeroNewsWebPart extends BaseClientSideWebPart<IHeroNewsWebP
   protected onDispose(): void {
     ReactDom.unmountComponentAtNode(this.domElement);
   }
-
   protected get dataVersion(): Version {
     return Version.parse('1.0');
   }
